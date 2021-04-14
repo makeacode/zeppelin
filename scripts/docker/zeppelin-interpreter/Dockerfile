@@ -26,7 +26,7 @@ ENV VERSION="${version}" \
 
 RUN set -ex && \
     apt-get -y update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jre-headless wget tini && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jdk-headless wget tini && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \
@@ -59,18 +59,19 @@ RUN set -ex && \
     bash miniconda.sh -b -p /opt/conda && \
     export PATH=/opt/conda/bin:$PATH && \
     conda config --set always_yes yes --set changeps1 no && \
-    conda info -a && \
     conda config --add channels conda-forge && \
-    conda install -y --quiet --file /conda_packages.txt && \
-    pip install -q -r /pip_packages.txt  && \
+    conda info -a && \
+    conda install mamba -c conda-forge && \
+    mamba install -y --file /conda_packages.txt && \
+    pip install -r /pip_packages.txt  && \
     # Cleanup
     rm -v miniconda.sh anaconda.sha256  && \
     # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    conda clean -ay
+    # find /opt/conda/ -follow -type f -name '*.a' -delete && \
+    # find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
+    mamba clean -ay && \
     # Allow to modify conda packages. This allows malicious code to be injected into other interpreter sessions, therefore it is disabled by default
-    # chmod -R ug+rwX /opt/conda
+    chmod -R ug+rwX /opt/conda
 ENV PATH /opt/conda/bin:$PATH
 
 RUN mkdir -p "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/local-repo" && \
@@ -79,6 +80,5 @@ RUN mkdir -p "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/lo
     # Give access to some specific folders
     chmod -R 775 "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/local-repo"
 
-USER 1000
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${ZEPPELIN_HOME}

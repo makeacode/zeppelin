@@ -13,11 +13,18 @@ ipykernel
 jupyter_client
 bokeh
 apache-beam
+py4j
+pyspark
+libgcc
 
 # R packages
+r-base == 3.6.3
+r-irkernel
 r-evaluate
 r-base64enc
 r-knitr
 r-ggplot2
 r-shiny
 r-googlevis
+r-xml
+r-rjava
